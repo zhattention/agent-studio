@@ -1,14 +1,16 @@
 import { useCallback } from 'react';
 import { saveConfig } from '../../services/api';
 import { TeamConfig } from '../../types';
+import { useStore } from '../../stores/StoreContext';
 
 export const useTeamConfig = (
   teamConfig: TeamConfig,
   setTeamConfig: React.Dispatch<React.SetStateAction<TeamConfig>>,
   nodes: any[],
-  setNodes: any,
-  showNotification: (type: 'success' | 'error' | 'info', message: string, duration?: number) => void
+  setNodes: any
 ) => {
+  const { uiStore } = useStore();
+
   // Update team configuration
   const updateTeamConfig = useCallback((updatedConfig: TeamConfig) => {
     setTeamConfig(updatedConfig);
@@ -30,8 +32,8 @@ export const useTeamConfig = (
       })
     );
     
-    showNotification('success', '团队配置已更新', 2000);
-  }, [setTeamConfig, setNodes, showNotification]);
+    uiStore.showNotification('success', '团队配置已更新', 2000);
+  }, [setTeamConfig, setNodes, uiStore]);
 
   // Update agents order based on connections
   const updateAgentsOrder = useCallback(() => {
@@ -208,17 +210,17 @@ export const useTeamConfig = (
           })
         );
         
-        showNotification('success', `配置已保存: ${response.path || teamConfig.name}`);
+        uiStore.showNotification('success', `配置已保存: ${response.path || teamConfig.name}`);
       } else {
-        showNotification('error', response.message || '保存失败');
+        uiStore.showNotification('error', response.message || '保存失败');
       }
     } catch (error) {
       console.error('Error saving config:', error);
-      showNotification('error', 
+      uiStore.showNotification('error', 
         `保存失败: ${error instanceof Error ? error.message : String(error)}`
       );
     }
-  }, [teamConfig, nodes, setNodes, setTeamConfig, showNotification]);
+  }, [teamConfig, nodes, setNodes, setTeamConfig, uiStore]);
 
   return {
     updateTeamConfig,

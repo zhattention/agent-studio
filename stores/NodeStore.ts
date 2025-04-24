@@ -1,3 +1,5 @@
+import { loadConfigRecursively } from '@/services/api';
+import { log } from 'console';
 import { makeObservable, observable, action, computed } from 'mobx';
 import { 
   Node, 
@@ -15,6 +17,9 @@ export interface IRootStore {
   nodeStore: NodeStore;
   configStore: {
     updateAgentsFromNodes: (agents: any[]) => void;
+  };
+  uiStore: {
+    showNotification: (type: 'success' | 'error' | 'info' | 'warning', message: string, duration?: number) => void;
   };
   manualSync: () => void; // 添加手动同步方法
 }
@@ -239,6 +244,18 @@ export class NodeStore {
         }
       };
     }
+
+    if (newData.team_call) {
+      const teamNode = this.nodes.find(node => node.data.name === newData.team_call);
+      const callNode = this.nodes.find(node => node.id === nodeId);
+      if (!teamNode) {
+        console.log("should load team config:", newData.team_call);
+        loadConfigRecursively('configs/' + newData.team_call + ".json").then(config => {
+          console.log("team config loaded:", config);
+          this.createNodesAndEdgesFromConfig(config, 'configs/' + newData.team_call + ".json", true, callNode?.id);
+        });
+      }
+    }
   };
   
   setSelectedNode = (node: Node | null) => {
@@ -256,6 +273,202 @@ export class NodeStore {
   get hasSelectedNodes() {
     return this.selectedNodes.length > 0 || this.selectedNode !== null;
   }
+  
+  // 从配置创建节点和边
+  createNodesAndEdgesFromConfig = (config: any, filePath: string, shouldAppend = true, parentId: string = '') => {
+    // 如果不是追加模式，则重置节点和边
+    if (!shouldAppend) {
+      this.nodes = [];
+      this.edges = [];
+    }
+
+    const startY = 50;
+    
+    // 计算起始X位置
+    const currentStartX = (() => {
+      const maxX = this.nodes.length > 0 
+        ? Math.max(...this.nodes.map(node => node.position.x)) 
+        : 0;
+      return maxX + 300; // 在当前节点之后300px放置新节点
+    })();
+    
+    // 递归创建节点的函数
+    const createNodesRecursively = (
+      config: any, 
+      startX: number, 
+      startY: number, 
+      parentId?: string
+    ): { nodes: Node[], edges: Edge[], mainTeamId: string } => {
+      const newNodes: Node[] = [];
+      const newEdges: Edge[] = [];
+      const localTimestamp = Date.now() + Math.floor(Math.random() * 1000);
+      
+      // 为每个 agent 创建节点
+      const agentNodes = (config.agents || []).map((agent: any, index: number) => {
+        const nodeId = `node_${localTimestamp}_${index}`;
+        const node: Node = {
+          id: nodeId,
+          type: 'agent',
+          position: {
+            x: startX,
+            y: startY + (index + 1)* 150
+          },
+          data: { 
+            ...agent,
+            // 添加配置来源标记
+            _sourceConfig: config.name || filePath.split('/').pop()
+          }
+        };
+        
+        return node;
+      });
+      
+      // 添加团队节点
+      const teamNodeId = `team_${localTimestamp}`;
+      const teamNode: Node = {
+        id: teamNodeId,
+        type: 'team',
+        position: {
+          x: startX,
+          y: startY
+        },
+        data: {
+          name: config.name || "new_team",
+          team_type: config.team_type as "round_robin" | "tree" | "parallel",
+          agentCount: agentNodes.length
+        }
+      };
+      
+      newNodes.push(teamNode);
+      newNodes.push(...agentNodes);
+      
+      // 创建团队到agent的边，以及agent之间的顺序连接
+      agentNodes.forEach((agentNode, index) => {
+        // 创建团队到第一个agent的边
+        if (index === 0) {
+          const edgeId = `edge_${teamNodeId}_to_${agentNode.id}`;
+          const edge: Edge = {
+            id: edgeId,
+            source: teamNodeId,
+            target: agentNode.id,
+            type: 'default',
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 10,
+              height: 10,
+              color: '#888'
+            }
+          };
+          newEdges.push(edge);
+        }
+        
+        // 创建agent之间的顺序连接（agent1 -> agent2 -> agent3...）
+        if (index < agentNodes.length - 1) {
+          const nextAgentNode = agentNodes[index + 1];
+          const edgeId = `edge_${agentNode.id}_to_${nextAgentNode.id}`;
+          const edge: Edge = {
+            id: edgeId,
+            source: agentNode.id,
+            target: nextAgentNode.id,
+            type: 'default',
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 10,
+              height: 10,
+              color: '#888'
+            }
+          };
+          newEdges.push(edge);
+        }
+      });
+      
+      // 如果有父节点，创建父节点到团队节点的连接
+      if (parentId) {
+        const parentEdgeId = `edge_${parentId}_to_${teamNodeId}`;
+        const parentEdge: Edge = {
+          id: parentEdgeId,
+          source: parentId,
+          target: teamNodeId,
+          type: 'default',
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            width: 10,
+            height: 10,
+            color: '#888'
+          }
+        };
+        
+        newEdges.push(parentEdge);
+      }
+      
+      // 递归处理每个agent的team_cfg
+      let offsetY = 0;
+      for (let i = 0; i < agentNodes.length; i++) {
+        const agent = config.agents[i];
+        if (agent.team_cfg) {
+          const subTeam = createNodesRecursively(
+            agent.team_cfg,
+            startX + 230,
+            startY + 150 + offsetY,
+            agentNodes[i].id
+          );
+          
+          newNodes.push(...subTeam.nodes);
+          newEdges.push(...subTeam.edges);
+          
+          // 调整下一个子团队的垂直位置
+          offsetY += 300;
+        }
+      }
+      
+      return { nodes: newNodes, edges: newEdges, mainTeamId: teamNodeId };
+    };
+    
+    // 创建所有节点和边
+    const { nodes: newNodes, edges: newEdges } = createNodesRecursively(config, currentStartX, startY, parentId);
+    
+    console.log('Created nodes and edges to add:', {
+      nodesCount: newNodes.length,
+      edgesCount: newEdges.length
+    });
+
+    // 检查边结构的有效性
+    const validEdges = newEdges.filter(edge => {
+      const isValid = edge && typeof edge === 'object' && 
+        typeof edge.id === 'string' && 
+        typeof edge.source === 'string' && 
+        typeof edge.target === 'string';
+      
+      if (!isValid) {
+        console.assert(false, 'Invalid edge format:', edge);
+      }
+      
+      return isValid;
+    });
+
+    if (validEdges.length !== newEdges.length) {
+      console.assert(false, `Some edges (${newEdges.length - validEdges.length}) were filtered due to invalid format`);
+    }
+
+    try {
+      // 更新节点和边
+      if (shouldAppend) {
+        // 在追加模式下，将新节点和边添加到现有的集合中
+        this.nodes = [...this.nodes, ...newNodes];
+        this.edges = [...this.edges, ...validEdges];
+        console.log('Appended new nodes and edges to existing ones');
+      } else {
+        // 在替换模式下，用新节点和边替换现有的
+        this.nodes = newNodes;
+        this.edges = validEdges;
+        console.log('Replaced nodes and edges with new ones');
+      }
+    } catch (error) {
+      console.error('Error updating nodes or edges:', error);
+    }
+
+    return { nodes: newNodes, edges: validEdges };
+  };
   
   // 序列化节点数据，用于与ConfigStore同步
   serializeNodes = () => {

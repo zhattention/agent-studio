@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { addEdge } from 'reactflow';
+import { useStore } from '../../stores/StoreContext';
 
 // Available tools and models list
 export const availableTools = [
@@ -25,9 +26,10 @@ export const useNodeOperations = (
   setSelectedNode: any,
   selectedNodes: any[],
   setSelectedNodes: any,
-  showNotification: (type: 'success' | 'error' | 'info', message: string, duration?: number) => void,
   updateAgentsOrder: () => void
 ) => {
+  const { uiStore } = useStore();
+  
   // Add a new node to the canvas
   const onAddNode = useCallback((type: 'agent' | 'team') => {
     // 生成节点ID
@@ -263,7 +265,7 @@ export const useNodeOperations = (
       setSelectedNodes([]);
       setSelectedNode(null);
       
-      showNotification('success', 
+      uiStore.showNotification('success', 
         `已删除${selectedNodes.length}个节点，重连了${reconnections.length}个连接`
       );
     } else if (selectedNode) {
@@ -318,7 +320,7 @@ export const useNodeOperations = (
       setSelectedNode(null);
       
       if (reconnections.length > 0) {
-        showNotification('success', 
+        uiStore.showNotification('success', 
           `已删除节点并重新连接${reconnections.length}个连接`
         );
       }
@@ -326,7 +328,7 @@ export const useNodeOperations = (
     
     // 更新节点连接状态
     updateAgentsOrder();
-  }, [selectedNode, selectedNodes, edges, setNodes, setEdges, setSelectedNode, setSelectedNodes, showNotification, updateAgentsOrder]);
+  }, [selectedNode, selectedNodes, edges, setNodes, setEdges, setSelectedNode, setSelectedNodes, updateAgentsOrder]);
 
   // Update node data when edited
   const onNodeDataUpdate = useCallback((data: any) => {

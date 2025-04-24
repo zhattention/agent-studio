@@ -19,6 +19,7 @@ import { TeamConfigEditor } from './TeamConfigEditor';
 import { AgentNode } from './AgentNode';
 import { TeamNode } from './TeamNode';
 import { FileSelector } from './FileSelector';
+import Notification from './Notification';
 
 // Hooks
 import {
@@ -48,11 +49,15 @@ const nodeTypes = {
 
 const AgentFlow: React.FC = observer(() => {
   // 使用MobX store
-  const { nodeStore, configStore } = useStore();
+  const { nodeStore, configStore, uiStore } = useStore();
+  
+  // 添加通知状态监听
+  useEffect(() => {
+    console.log('uiStore.notification 变化:', uiStore.notification);
+  }, [uiStore.notification]);
   
   // 仍使用useAgentFlowState获取其他状态，后续将逐步替换
   const {
-    notification,
     isConnectMode, setIsConnectMode,
     configFiles, setConfigFiles,
     promptFiles, setPromptFiles,
@@ -81,7 +86,6 @@ const AgentFlow: React.FC = observer(() => {
     nodeStore.setSelectedNode,
     nodeStore.selectedNodes,
     nodeStore.setSelectedNodes,
-    showNotification,
     () => {}  // 暂时使用空函数替代updateAgentsOrder
   );
 
@@ -94,7 +98,6 @@ const AgentFlow: React.FC = observer(() => {
     nodeStore.nodes,
     nodeStore.edges,
     nodeStore.setEdges,
-    showNotification,
     () => {}  // 暂时使用空函数替代updateAgentsOrder
   );
 
@@ -117,8 +120,7 @@ const AgentFlow: React.FC = observer(() => {
     setConfigFiles,
     setPromptFiles,
     closeFileSelector,
-    onNodeDataUpdate,
-    showNotification
+    onNodeDataUpdate
   );
 
   // Sidebar resizing
@@ -137,14 +139,14 @@ const AgentFlow: React.FC = observer(() => {
   // Toggle connection mode
   const toggleConnectMode = useCallback(() => {
     setIsConnectMode(!isConnectMode);
-    showNotification(
+    uiStore.showNotification(
       'info',
       !isConnectMode 
         ? '已进入连接模式：拖动节点上的连接点到另一个节点创建连接' 
         : '已退出连接模式',
       3000
     );
-  }, [isConnectMode, setIsConnectMode, showNotification]);
+  }, [isConnectMode, setIsConnectMode, uiStore]);
 
   // 处理保存配置
   const handleSaveConfig = useCallback(async () => {
@@ -152,15 +154,15 @@ const AgentFlow: React.FC = observer(() => {
       const success = await configStore.saveTeamConfig();
       
       if (success) {
-        showNotification('success', `配置已保存: ${configStore.teamConfig.name}`);
+        uiStore.showNotification('success', `配置已保存: ${configStore.teamConfig.name}`);
       } else {
-        showNotification('error', '保存失败');
+        uiStore.showNotification('error', '保存失败');
       }
     } catch (error) {
       console.error('Error saving config:', error);
-      showNotification('error', `保存失败: ${error instanceof Error ? error.message : String(error)}`);
+      uiStore.showNotification('error', `保存失败: ${error instanceof Error ? error.message : String(error)}`);
     }
-  }, [configStore, showNotification]);
+  }, [configStore, uiStore]);
 
   // Handle node click - 使用MobX store
   const onNodeClick = useCallback((event: React.MouseEvent, node: ReactFlowNode) => {
@@ -200,10 +202,14 @@ const AgentFlow: React.FC = observer(() => {
       reactFlowInstance: !!nodeStore.reactFlowInstance
     });
     
+    // 在组件挂载时显示通知
+    uiStore.showNotification('success', '组件挂载成功 - 初始化通知', 30000);
+    console.log('挂载时发送通知:', uiStore.notification);
+    
     return () => {
       console.log('AgentFlow unmounting');
     };
-  }, []);
+  }, [uiStore, nodeStore]);
 
   return (
     <div className="app-container">
@@ -313,11 +319,8 @@ const AgentFlow: React.FC = observer(() => {
         </div>
       </div>
       
-      {notification && (
-        <div className={`notification ${notification.type}`}>
-          {notification.message}
-        </div>
-      )}
+      {/* 使用新的Notification组件 */}
+      <Notification />
       
       {showConfigSelector && (
         <FileSelector
