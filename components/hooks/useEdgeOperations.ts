@@ -10,6 +10,8 @@ export const useEdgeOperations = (
 ) => {
   // Handle node connections
   const onConnect = useCallback((params: Connection) => {
+    console.log('onConnect', params);
+
     // 创建新连接
     const newEdge: any = {
       ...params,
@@ -18,10 +20,9 @@ export const useEdgeOperations = (
     };
     
     // 检查是否是从team节点到agent节点的连接
-    const sourceNode = nodes.find(node => node.id === params.source);
-    if (sourceNode && sourceNode.type === 'team') {
-      newEdge.style = { stroke: '#2e7d32', strokeWidth: 2 };
-    }
+    const sourceNode = nodes.find(node => node.id === params.source)
+
+    delete newEdge.style;
     
     setEdges((eds: any) => addEdge(newEdge, eds));
     updateAgentsOrder();

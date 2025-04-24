@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { verifyAuth } from '../../../utils/auth';
+
+// Tell Next.js this route should be dynamic since it uses cookies for authentication
+export const dynamic = 'force-dynamic';
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
@@ -153,6 +157,16 @@ async function saveTeamConfigRecursively(teamConfig: any, rootDir: string): Prom
 
 // GET 请求处理 - 获取配置文件列表
 export async function GET(request: NextRequest) {
+  // 验证认证
+  const user = verifyAuth(request);
+  
+  if (!user) {
+    console.log('[GET /api/configs] 未授权访问');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  console.log(`[GET /api/configs] 用户 ${user.username} 请求获取配置文件列表`);
+  
   try {
     console.log('-----------------------------------------------------------');
     console.log(`[GET /api/configs] 收到获取配置文件列表请求`);
@@ -193,6 +207,16 @@ export async function GET(request: NextRequest) {
 
 // POST 请求处理 - 保存配置文件
 export async function POST(request: NextRequest) {
+  // 验证认证
+  const user = verifyAuth(request);
+  
+  if (!user) {
+    console.log('[POST /api/configs] 未授权访问');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  console.log(`[POST /api/configs] 用户 ${user.username} 请求保存配置`);
+  
   try {
     const body = await request.json();
     console.log('-----------------------------------------------------------');

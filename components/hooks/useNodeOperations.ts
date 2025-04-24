@@ -121,7 +121,6 @@ export const useNodeOperations = (
           source: connectSource,
           target: nodeId,
           type: 'default',
-          style: selectedNode?.type === 'team' ? { stroke: '#2e7d32', strokeWidth: 2 } : undefined
         });
         
         // 如果选中节点有连出的边，将目标节点连接到新节点
@@ -168,7 +167,6 @@ export const useNodeOperations = (
               source: unconnectedTeam.id,
               target: nodeId,
               type: 'default',
-              style: { stroke: '#2e7d32', strokeWidth: 2 }
             }
           ]);
         }
@@ -256,7 +254,6 @@ export const useNodeOperations = (
           source: reconnect.source,
           target: reconnect.target,
           type: 'default',
-          style: reconnect.style
         }));
         
         return [...remainingEdges, ...newEdges];
@@ -292,8 +289,6 @@ export const useNodeOperations = (
             reconnections.push({
               source: inEdge.source,
               target: outEdge.target,
-              // 如果入边是从team来的，保留特殊样式
-              style: inEdge.style
             });
           });
         });
@@ -315,7 +310,6 @@ export const useNodeOperations = (
           source: reconnect.source,
           target: reconnect.target,
           type: 'default',
-          style: reconnect.style
         }));
         
         return [...remainingEdges, ...newEdges];

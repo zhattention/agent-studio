@@ -102,4 +102,43 @@ The editor generates JSON configurations compatible with the AI agent system. Th
 
 - **0**: One-time execution
 - **-1**: Continuous execution until stopped
-- **Positive number**: Interval in seconds between executions 
+- **Positive number**: Interval in seconds between executions
+
+## Authentication Setup
+
+The application uses JWT-based authentication with cookies for secure login. To set up authentication:
+
+1. Copy the `env.example` file to `.env`:
+   ```bash
+   cp env.example .env
+   ```
+
+2. Edit the `.env` file with your own values:
+   - Set a strong `JWT_SECRET` for token signing
+   - **必须**配置用户凭据 (`ADMIN_USERNAME`, `ADMIN_PASSWORD`, `USER_USERNAME`, `USER_PASSWORD`)
+   - 所有环境变量都必须设置，否则认证将无法工作
+
+3. Environment variables are loaded via the `config/auth.config.ts` file, which provides centralized authentication configuration.
+
+### Starting with Authentication
+
+The application will automatically use authentication based on your environment settings:
+
+- Development mode:
+  ```bash
+  npm run dev
+  ```
+
+- Production mode:
+  ```bash
+  npm run build
+  npm run start:prod
+  ```
+
+In production:
+- Use a secure database for user management instead of hardcoded values
+- Implement proper password hashing
+- Set appropriate cookie security options
+- Consider using a longer token expiry and implementing refresh tokens
+
+**Note:** The `.env` file is excluded from git to keep sensitive information secure. 

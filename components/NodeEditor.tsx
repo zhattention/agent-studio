@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useCallback, useState, useEffect, ChangeEvent } from 'react';
-import { readPromptPath } from '../services/api';
-import { AgentNode, TeamNode } from '../types';
 import { useStore } from '../stores/StoreContext';
 import { observer } from 'mobx-react-lite';
 

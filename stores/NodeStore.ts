@@ -6,7 +6,8 @@ import {
   applyNodeChanges, 
   applyEdgeChanges, 
   NodeChange, 
-  EdgeChange
+  EdgeChange,
+  MarkerType
 } from 'reactflow';
 
 // 使用interface代替直接引用，避免循环依赖
@@ -91,9 +92,6 @@ export class NodeStore {
   };
   
   setEdges = (edges: Edge[] | any) => {
-    // 添加详细日志
-    
-    
     // 如果是函数，执行它并传入当前edges
     if (typeof edges === 'function') {
       try {
@@ -119,6 +117,15 @@ export class NodeStore {
       console.warn('NodeStore.setEdges received invalid input:', edges);
       // 不更改当前状态
     }
+
+    this.edges.forEach(edge => {
+      edge.markerEnd = {
+        type: MarkerType.ArrowClosed,
+        width: 10,
+        height: 10,
+        color: '#888'
+      }
+    });
   };
   
   onNodesChange = (changes: NodeChange[]) => {

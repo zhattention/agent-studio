@@ -4,6 +4,9 @@ import path from 'path';
 import { promisify } from 'util';
 import { log } from 'console';
 
+// Force dynamic since this route uses request body
+export const dynamic = 'force-dynamic';
+
 const readFile = promisify(fs.readFile);
 
 // 将 /ai_agent 路径映射到 ./agent-data
