@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { AUTH_CONFIG } from '../config/auth.config';
 
 interface User {
   username: string;
@@ -83,21 +84,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      console.log('AuthContext: 开始登出...');
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
+      // 清除本地状态
+      setUser(null);
       
-      if (response.ok) {
-        console.log('AuthContext: 登出成功');
-        setUser(null);
-        router.push('/login');
-      } else {
-        console.error('AuthContext: 登出失败, 状态码:', response.status);
+      // 尝试调用登出API
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+      } catch (fetchError) {
+        // 捕获网络错误但继续执行
       }
+      
+      // 无论API调用是否成功，强制清除cookie
+      document.cookie = `${AUTH_CONFIG.COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      
+      // 无论API调用是否成功，强制刷新页面到登录页
+      window.location.href = '/login';
     } catch (err) {
-      console.error('AuthContext: 登出出错:', err);
-      setError('Logout failed');
+      // 发生错误时，确保仍然清除cookie并重定向
+      document.cookie = `${AUTH_CONFIG.COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      window.location.href = '/login';
     }
   };
 

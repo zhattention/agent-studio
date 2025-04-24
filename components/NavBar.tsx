@@ -4,6 +4,7 @@ import React, { useEffect, useState, Fragment } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
+import { AUTH_CONFIG } from '../config/auth.config';
 
 export default function NavBar() {
   const { user, logout, loading } = useAuth();
@@ -36,10 +37,47 @@ export default function NavBar() {
   
   // 处理登出
   const handleLogout = async () => {
-    await logout();
-    setManualUser(null);
-    setUserMenuOpen(false);
-    router.push('/login');
+    try {
+      // 立即清除本地状态
+      setManualUser(null);
+      setUserMenuOpen(false);
+      
+      // 直接发出请求进行登出
+      try {
+        const response = await fetch('/api/auth/logout', { 
+          method: 'POST',
+          cache: 'no-store',
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        // 如果API调用成功，手动处理登出
+        if (response.ok) {
+          // 清除cookie
+          document.cookie = `${AUTH_CONFIG.COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          
+          // 重定向到登录页
+          window.location.href = '/login';
+          return;
+        }
+      } catch (networkError) {
+        // 网络错误时继续使用备用登出机制
+      }
+      
+      // 如果直接API调用失败，尝试调用logout函数
+      await logout();
+    } catch (error) {
+      // 如果logout函数失败，执行基本的登出操作
+      
+      // 尝试强制清除cookie
+      document.cookie = `${AUTH_CONFIG.COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      
+      // 强制刷新到登录页
+      window.location.href = '/login';
+    }
   };
   
   // 菜单项
