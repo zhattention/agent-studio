@@ -195,22 +195,6 @@ const AgentFlow: React.FC = observer(() => {
     });
   }, [nodeStore.nodes]);
 
-  // 记录初始化完成
-  useEffect(() => {
-    console.log('AgentFlow mounted with:', {
-      nodesCount: nodeStore.nodes.length,
-      reactFlowInstance: !!nodeStore.reactFlowInstance
-    });
-    
-    // 在组件挂载时显示通知
-    uiStore.showNotification('success', '组件挂载成功 - 初始化通知', 30000);
-    console.log('挂载时发送通知:', uiStore.notification);
-    
-    return () => {
-      console.log('AgentFlow unmounting');
-    };
-  }, [uiStore, nodeStore]);
-
   return (
     <div className="app-container">
       <div className="toolbar">

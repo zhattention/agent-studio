@@ -59,7 +59,9 @@ export const useFileOperations = (
             team_type: config.team_type || "round_robin",
             team_prompt: config.team_prompt || "",
             agents: [],
-            duration: config.duration || 0
+            duration: config.duration || 0,
+            twitter: config.twitter || {},
+            telegram: config.telegram || {}
           });
         }
         

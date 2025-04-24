@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { addEdge } from 'reactflow';
 import { useStore } from '../../stores/StoreContext';
+import { AVAILABLE_MODELS } from '../constants';
 
 // Available tools and models list
 export const availableTools = [
@@ -11,11 +12,8 @@ export const availableTools = [
   "twitter_retweet"
 ];
 
-export const availableModels = [
-  "openai/gpt-4o-mini", 
-  "openai/gpt-4.1-mini", 
-  "google/gemini-2.0-flash-001"
-];
+// Export AVAILABLE_MODELS from constants instead of defining it here
+export const availableModels = AVAILABLE_MODELS;
 
 export const useNodeOperations = (
   nodes: any[],
@@ -73,7 +71,7 @@ export const useNodeOperations = (
       ? {
           name: `agent_${nodes.filter(n => n.type === 'agent').length + 1}`,
           tools: [],
-          model: availableModels[0],
+          model: availableModels[0]?.id || "",
           prompt: "",
           transition_prompt: ""
         }

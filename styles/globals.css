@@ -122,7 +122,6 @@ body {
 .form-group label {
   display: block;
   margin-bottom: 5px;
-  font-weight: 500;
 }
 
 .form-group input, .form-group select, .form-group textarea {
@@ -139,25 +138,200 @@ body {
 }
 
 .tools-list {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+  background-color: #fafafa;
+}
+
+.tools-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tools-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tools-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.tools-list::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
 }
 
 .tool-item {
   display: flex;
-  align-items: center;
-  margin-bottom: 5px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  background-color: #fff;
+  padding: 8px;
+  align-items: flex-start;
 }
 
-.tool-item input {
-  margin-right: 5px;
-  width: auto;
+.tool-item input[type="checkbox"] {
+  margin: 4px 0 0 0;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
-.tool-item label {
-  margin-bottom: 0;
+.tool-content {
+  margin-left: 10px;
   flex: 1;
+}
+
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  align-items: center;
+  min-height: 22px;
+}
+
+.tool-name {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  padding-top: 0;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.tool-description {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 2px;
+  padding-right: 4px;
+}
+
+.info-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 15px;
+  height: 22px;
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+/* Tool active state */
+.tool-item input:checked ~ .tool-content .tool-header label .tool-name {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Tool search and filter - simplified */
+.tools-filter {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.tool-search-input {
+  width: 100%;
+  padding: 8px 28px 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  background-color: white;
+}
+
+.tool-search-input:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+}
+
+.clear-filter-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  font-size: 14px;
+}
+
+.tools-count {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #777;
+}
+
+.no-tools-found {
+  padding: 20px;
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}
+
+/* Tool details modal styling improvements */
+.tool-details-modal {
+  width: 520px;
+  max-width: 90vw;
+}
+
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-color);
+  letter-spacing: -0.3px;
+}
+
+.tool-modal-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-body h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 15px 0 8px;
+  letter-spacing: -0.2px;
+}
+
+.tool-args-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-bottom: 20px;
+}
+
+.tool-args-list li {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--primary-color);
+  background-color: rgba(67, 97, 238, 0.03);
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tool-args-list li strong {
+  color: #1a1a1a;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 100px;
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
+  font-size: 13px;
 }
 
 .sidebar-title {
@@ -975,4 +1149,209 @@ body.resizing {
 
 .uppercase {
   text-transform: uppercase;
+}
+
+/* 团队调用选择器样式 */
+.team-call-selector {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.team-call-selector input {
+  flex: 1;
+  background-color: var(--bg-light);
+  cursor: pointer;
+}
+
+.team-call-selector .button {
+  min-width: 60px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* 帮助文本样式 */
+.help-text {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Selected tools indicator */
+.selected-tools-count {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+.tool-item:hover {
+  border-color: #c0c0c0;
+  background-color: #fefefe;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* 大型文本编辑器模态框样式 */
+.large-text-editor {
+  width: 90%;
+  max-width: 1400px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.large-text-area {
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+  resize: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 24px;
+  font-family: monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  color: #333;
+  background-color: #fcfcfc;
+}
+
+.large-text-area:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 0 2px rgba(67, 97, 238, 0.2);
+  background-color: white;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(3px);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+}
+
+.modal-actions .close-button {
+  margin-left: 12px;
+}
+
+.expand-button {
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.modal-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.large-text-editor .modal-body {
+  padding: 0;
+}
+
+/* 改进原有模态框样式以支持大型编辑器 */
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  max-width: 90%;
+  width: 90%;
+  max-height: 90vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 表单组标头样式 */
+.form-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.form-group-header label {
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+.expand-icon {
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.expand-button {
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.expand-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #f9f9f9;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* 主按钮和保存按钮样式 */
+.primary-button {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primary-button:hover {
+  background-color: #3451d1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.save-button {
+  font-size: 14px;
+  padding: 8px 20px;
 } 

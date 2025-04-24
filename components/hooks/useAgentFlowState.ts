@@ -26,7 +26,7 @@ export const useAgentFlowState = () => {
   const [showConfigSelector, setShowConfigSelector] = useState(false);
   const [showPromptSelector, setShowPromptSelector] = useState(false);
   const [fileSelectorType, setFileSelectorType] = useState<FileSelectorType>('config');
-  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [sidebarWidth, setSidebarWidth] = useState(500);
   const [isResizing, setIsResizing] = useState(false);
   
   // Show notification with auto-dismiss
