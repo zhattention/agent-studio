@@ -1,4 +1,4 @@
-import { makeObservable, observable, action } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { saveConfig } from '../services/api';
 import type { TeamConfig } from '../types';
 import { IRootStore } from './NodeStore';
@@ -20,11 +20,8 @@ export class ConfigStore {
   constructor(rootStore: IRootStore) {
     this.rootStore = rootStore;
     
-    makeObservable(this, {
-      teamConfig: observable,
-      setTeamConfig: action,
-      updateAgentsFromNodes: action,
-      saveTeamConfig: action
+    makeAutoObservable(this, {
+      rootStore: false
     });
   }
   

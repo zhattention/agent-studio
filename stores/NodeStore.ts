@@ -1,6 +1,6 @@
 import { loadConfigRecursively } from '@/services/api';
 import { log } from 'console';
-import { makeObservable, observable, action, computed } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { 
   Node, 
   Edge, 
@@ -11,6 +11,7 @@ import {
   EdgeChange,
   MarkerType
 } from 'reactflow';
+import { ThreadStore } from './ThreadStore';
 
 // 使用interface代替直接引用，避免循环依赖
 export interface IRootStore {
@@ -21,6 +22,7 @@ export interface IRootStore {
   uiStore: {
     showNotification: (type: 'success' | 'error' | 'info' | 'warning', message: string, duration?: number) => void;
   };
+  threadStore?: ThreadStore;
   manualSync: () => void; // 添加手动同步方法
 }
 
@@ -36,25 +38,8 @@ export class NodeStore {
   constructor(rootStore: IRootStore) {
     this.rootStore = rootStore;
     
-    makeObservable(this, {
-      nodes: observable,
-      edges: observable,
-      selectedNode: observable,
-      selectedNodes: observable,
-      reactFlowInstance: observable,
-      
-      setNodes: action,
-      setEdges: action,
-      onNodesChange: action,
-      onEdgesChange: action,
-      addNode: action,
-      deleteNode: action,
-      updateNodeData: action,
-      setSelectedNode: action,
-      setSelectedNodes: action,
-      setReactFlowInstance: action,
-      
-      hasSelectedNodes: computed
+    makeAutoObservable(this, {
+      rootStore: false
     });
   }
   
@@ -335,7 +320,9 @@ export class NodeStore {
         data: {
           name: config.name || "new_team",
           team_type: config.team_type as "round_robin" | "tree" | "parallel",
-          agentCount: agentNodes.length
+          team_prompt: config.team_prompt || "",
+          agentCount: agentNodes.length,
+          duration: config.duration || 0,
         }
       };
       
