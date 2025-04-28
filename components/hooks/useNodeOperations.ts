@@ -104,7 +104,6 @@ export const useNodeOperations = (
             source: nodeId,
             target: firstAgent.id,
             type: 'default',
-            style: { stroke: '#2e7d32', strokeWidth: 2 }
           }
         ]);
       }

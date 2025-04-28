@@ -4,51 +4,12 @@ import React, { useCallback, useState, useEffect, ChangeEvent } from 'react';
 import { useStore } from '../stores/StoreContext';
 import { observer } from 'mobx-react-lite';
 import { TeamSelector } from './TeamSelector';
-import { getConfigFiles } from '../services/api';
+import { getConfigFiles, callTeam } from '../services/api';
 import { FileInfo } from '../types';
 import { TOOL_DESCRIPTIONS } from './constants';
-
-// 新增的长文本编辑模态框组件
-interface LargeTextEditorProps {
-  initialText: string;
-  title: string;
-  onSave: (text: string) => void;
-  onClose: () => void;
-}
-
-const LargeTextEditor: React.FC<LargeTextEditorProps> = ({ initialText, title, onSave, onClose }) => {
-  const [text, setText] = useState(initialText);
-
-  const handleSave = () => {
-    onSave(text);
-    onClose();
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content large-text-editor" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>{title}</h3>
-          <div className="modal-actions">
-            <button className="button primary-button save-button" onClick={handleSave}>
-             Confirm
-            </button>
-            <button className="close-button" onClick={onClose}>×</button>
-          </div>
-        </div>
-        <div className="modal-body">
-          <textarea 
-            className="large-text-area"
-            value={text} 
-            onChange={(e) => setText(e.target.value)}
-            placeholder="在这里输入详细的 prompt..."
-            autoFocus
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
+import LargeTextEditor from './LargeTextEditor';
+import StreamingTeamCall from './StreamingTeamCall';
+import ThreadViewer from './ThreadViewer';
 
 interface ToolDetailsModalProps {
   tool: string;
@@ -109,7 +70,7 @@ interface NodeEditorProps {
 }
 
 export const NodeEditor = observer(({ availableTools, availableModels }: NodeEditorProps) => {
-  const { nodeStore } = useStore();
+  const { nodeStore, uiStore, threadStore } = useStore();
   const node = nodeStore.selectedNode;
   
   const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
@@ -120,6 +81,15 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
   const [toolFilter, setToolFilter] = useState<string>("");
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [showTransitionPromptEditor, setShowTransitionPromptEditor] = useState(false);
+  
+  // 添加团队运行相关状态
+  const [teamContent, setTeamContent] = useState('');
+  const [teamResponse, setTeamResponse] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [showResponseViewer, setShowResponseViewer] = useState(false);
+  
+  // 添加使用流式响应的状态
+  const [useStreaming, setUseStreaming] = useState(true);
   
   // 如果没有选中节点，不渲染任何内容
   if (!node) return null;
@@ -187,6 +157,58 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
     e.stopPropagation();
     setSelectedTool(tool);
   };
+  
+  const handleTeamContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setTeamContent(e.target.value);
+  };
+  
+  // 处理流式调用完成
+  const handleStreamComplete = useCallback((data: any) => {
+    setTeamResponse(data);
+    setShowResponseViewer(true);
+    uiStore.showNotification('success', `team ${node.data.name} 运行完成`, 3000);
+  }, [node.data.name, uiStore]);
+  
+  // 处理流式调用错误
+  const handleStreamError = (error: any) => {
+    console.error('运行团队出错:', error);
+    uiStore.showNotification('error', 
+      `运行失败: ${error instanceof Error ? error.message : String(error)}`, 5000);
+  };
+  
+  // 常规团队调用方法
+  const startTeam = async () => {
+    if (!node || node.type !== 'team' || !node.data.name) {
+      uiStore.showNotification('error', '无效的团队节点', 3000);
+      return;
+    }
+    
+    try {
+      setIsRunning(true);
+      setTeamResponse(null);
+      uiStore.showNotification('info', `正在运行团队 ${node.data.name}，可能需要一些时间...`, 5000);
+      
+      const response = await callTeam(node.data.name, teamContent);
+      if (response.status !== 'success') {
+        throw new Error(response.error);
+      }
+      
+      setTeamResponse(JSON.stringify(response.result, null, 2));
+      uiStore.showNotification('success', `团队 ${node.data.name} 运行完成`, 3000);
+      setShowResponseViewer(true);
+    } catch (error) {
+      console.error('运行团队出错:', error);
+      uiStore.showNotification('error', 
+        `运行失败: ${error instanceof Error ? error.message : String(error)}`, 5000);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+  
+  // 查看完整响应
+  const viewFullResponse = useCallback(() => {
+    threadStore.setShowThreadViewer(true);
+  }, [threadStore]);
   
   if (node.type === 'agent') {
     return (
@@ -407,7 +429,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
     return (
       <div className="editor-form">
         <div className="form-group">
-          <label>Name:</label>
+          <label>Team Name:</label>
           <input 
             type="text" 
             name="name" 
@@ -415,6 +437,122 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
             onChange={handleChange} 
           />
         </div>
+        
+        <div className="form-group">
+          <label>Team Type:</label>
+          <select 
+            name="team_type" 
+            value={node.data.team_type || "round_robin"} 
+            onChange={handleChange}
+          >
+            <option value="round_robin">round_robin</option>
+            <option value="tree">tree</option>
+            <option value="parallel">parallel</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Team Prompt:</label>
+          <textarea 
+            name="team_prompt" 
+            value={node.data.team_prompt || ""} 
+            onChange={handleChange}
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Duration (seconds):</label>
+          <input 
+            type="number" 
+            name="duration" 
+            value={node.data.duration || 0} 
+            onChange={handleChange} 
+          />
+          <small>0 for one-time execution, -1 for continuous, or seconds between executions</small>
+        </div>
+        
+        {/* 添加响应模式选择 */}
+        <div className="form-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={useStreaming}
+              onChange={() => setUseStreaming(!useStreaming)}
+            />
+            使用流式响应 (实时显示进度)
+          </label>
+        </div>
+        
+        {/* 基于选择的响应模式显示不同组件 */}
+        {useStreaming ? (
+          <div className="form-group mt-4">
+            <div className="team-run-panel">
+              <h3>运行团队 (流式响应)</h3>
+              <textarea
+                placeholder="输入要发送给团队的内容... (可选，留空则发送空内容)"
+                value={teamContent}
+                onChange={handleTeamContentChange}
+                className="team-content-input mb-3"
+                rows={4}
+              />
+              
+              {/* 流式团队调用组件 */}
+              <StreamingTeamCall
+                teamName={node.data.name}
+                content={teamContent}
+                onComplete={handleStreamComplete}
+                onError={handleStreamError}
+              />
+            </div>
+          </div>
+        ) : (
+          /* 原始团队运行面板 */
+          <div className="form-group mt-4">
+            <div className="team-run-panel">
+              <h3>运行团队</h3>
+              <textarea
+                placeholder="输入要发送给团队的内容... (可选，留空则发送空内容)"
+                value={teamContent}
+                onChange={handleTeamContentChange}
+                className="team-content-input"
+                rows={4}
+                disabled={isRunning}
+              />
+              <small className="help-text">可以留空，将使用空字符串作为输入内容</small>
+              <button 
+                className={`button ${isRunning ? 'loading' : 'primary'}`}
+                onClick={startTeam}
+                disabled={isRunning}
+                style={{ marginTop: '10px', width: '100%' }}
+              >
+                {isRunning ? '运行中...' : `Start Team "${node.data.name}"`}
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* 添加结果显示区域 (仅在非流式模式下显示) */}
+        {!useStreaming && teamResponse && (
+          <div className="form-group mt-3">
+            <div className="form-group-header">
+              <h3>运行结果</h3>
+              <button 
+                className="button small-button expand-button" 
+                onClick={viewFullResponse}
+                title="查看完整结果"
+              >
+                <span className="expand-icon">⤢</span> 查看完整结果
+              </button>
+            </div>
+            <div className="team-response">
+              <pre>
+                {teamResponse.length > 500 
+                  ? `${teamResponse.slice(0, 500)}... (点击"查看完整结果"按钮查看全部内容)` 
+                  : teamResponse}
+              </pre>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

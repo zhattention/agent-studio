@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { verifyAuth } from '../../../utils/auth';
 
 // Force dynamic since this route uses request params
 export const dynamic = 'force-dynamic';
@@ -34,6 +35,14 @@ async function ensureDirectoryExists(dirPath: string) {
 
 // GET 请求处理 - 获取提示文件列表或读取特定提示文件
 export async function GET(request: NextRequest) {
+  // 验证认证
+  const user = verifyAuth(request);
+  
+  if (!user) {
+    console.log('[GET /api/prompts] 未授权访问');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   // 检查是否有 path 参数，如果有，则读取特定的提示文件
   const searchParams = request.nextUrl.searchParams;
   const promptPath = searchParams.get('path');
@@ -127,6 +136,14 @@ export async function GET(request: NextRequest) {
 
 // POST 请求处理 - 用于读取或保存提示文件
 export async function POST(request: NextRequest) {
+  // 验证认证
+  const user = verifyAuth(request);
+  
+  if (!user) {
+    console.log('[POST /api/prompts] 未授权访问');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   try {
     const body = await request.json();
     console.log('-----------------------------------------------------------');

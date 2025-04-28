@@ -2,6 +2,9 @@
  * API 服务 - 封装所有 fetch 调用
  */
 
+import { rootStore } from "@/stores/StoreContext";
+
+
 // 定义接口类型
 interface ApiResponse<T = any> {
   content?: T;
@@ -110,4 +113,139 @@ export const saveConfig = (fileName: string, content: any): Promise<ApiResponse>
       content: updatedContent
     }),
   });
+};
+
+// 调用团队功能
+export const callTeam = (
+  teamName: string, 
+  content: string, 
+  fullMessage: boolean = true
+): Promise<{result: string, status: string, error?: string}> => {
+  // 使用我们的后端API作为代理
+  return fetchAPI('/api/team/call', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      team_name: teamName,
+      content: content,
+      full_message: fullMessage 
+    }),
+  });
+};
+
+// 流式调用团队功能
+export const streamCallTeam = (
+  teamName: string,
+  content: string,
+  onUpdate: (data: any) => void,
+  onComplete: (data: any) => void,
+  onError: (error: any) => void,
+  fullMessage: boolean = true
+): { abort: () => void } => {
+  const abortController = new AbortController();
+  
+  const threadStore = rootStore.threadStore;
+
+  const executionId = threadStore?.addExecutionResult(teamName);
+  
+  (async () => {
+    try {
+      const response = await fetch('/api/team/call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          team_name: teamName,
+          content: content,
+          full_message: fullMessage
+        }),
+        signal: abortController.signal
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('无法获取响应流');
+      }
+      
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          break;
+        }
+        
+        const text = decoder.decode(value, { stream: true });
+        buffer += text;
+        
+        let startPos = 0;
+        for (let i = 0; i < buffer.length; i++) {
+          if (buffer[i] === '\n') {
+            const line = buffer.substring(startPos, i).trim();
+            startPos = i + 1;
+            
+            if (line) {
+              try {
+                const data = JSON.parse(line);
+                // 将解析后的数据传给threadStore处理
+                if (threadStore && executionId) {
+                  threadStore.processStreamData(executionId, data);
+                }
+                onUpdate(data);
+              } catch (e) {
+                console.error('解析JSON数据失败:', e, line);
+              }
+            }
+          }
+        }
+        
+        if (startPos < buffer.length) {
+          buffer = buffer.substring(startPos);
+        } else {
+          buffer = '';
+        }
+      }
+      
+      if (buffer.trim()) {
+        try {
+          const data = JSON.parse(buffer.trim());
+          if (threadStore && executionId) {
+            threadStore.processStreamData(executionId, data);
+          }
+          onUpdate(data);
+        } catch (e) {
+          console.error('解析剩余JSON数据失败:', e, buffer);
+        }
+      }
+      
+      if (threadStore && executionId) {
+        threadStore.completeExecution(executionId);
+      }
+      onComplete("");
+    } catch (error) {
+      console.error(`流式API错误:`, error);
+      if (threadStore && executionId) {
+        threadStore.handleError(executionId, error);
+      }
+      onError(error);
+    }
+  })();
+  
+  return {
+    abort: () => {
+      if (threadStore && executionId) {
+        threadStore.handleAbort(executionId);
+      }
+      abortController.abort();
+    }
+  };
 };

@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { log } from 'console';
+import { verifyAuth } from '../../../utils/auth';
 
 // Force dynamic since this route uses request body
 export const dynamic = 'force-dynamic';
@@ -73,6 +74,14 @@ async function processPrompts(data: any): Promise<any> {
 
 // POST 请求处理 - 加载文件内容
 export async function POST(request: NextRequest) {
+  // 验证认证
+  const user = verifyAuth(request);
+  
+  if (!user) {
+    console.log('[POST /api/load-file] 未授权访问');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   try {
     const { filePath } = await request.json();
     console.log('POST /api/load-file - Request filePath:', filePath);

@@ -1,0 +1,27 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# API Architecture
+
+The application uses Next.js API routes for backend functionality.
+
+## Team API
+
+### Team Call API
+[app/api/team/call/route.ts](mdc:app/api/team/call/route.ts) provides a route for calling AI team services.
+
+- **Endpoint**: POST /api/team/call
+- **Authentication**: Required via JWT token
+- **Functionality**: Forwards requests to a team service at http://localhost:8010/api/tools/team/call_stream
+- **Stream Response**: Returns a stream of updates during team processing
+- **Timeout**: 10 minutes (600 seconds)
+
+### Required Parameters:
+- `team_name`: The name of the team to call
+- `content`: The content/prompt to send to the team
+- `full_message`: (Optional) Whether to include the full message
+
+### Authentication Flow
+API routes use the [utils/auth.ts](mdc:utils/auth.ts) utility for JWT verification.

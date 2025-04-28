@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Team API Guide
+
+## Overview
+The Team API allows interaction with AI team services through a streaming API endpoint.
+
+## Team Call Endpoint
+[app/api/team/call/route.ts](mdc:app/api/team/call/route.ts) provides a streaming response for team interactions.
+
+### Implementation Details
+- Authenticates users via JWT tokens
+- Forwards requests to the team service endpoint
+- Handles streaming responses with proper encoding/decoding
+- Implements timeout handling (10 minutes max)
+- Provides progress updates during processing
+
+### Error Handling
+The endpoint handles various error scenarios:
+- Authentication failures
+- Request timeouts
+- Internal server errors
+- Missing required parameters
+
+### Response Format
+The streaming response sends JSON objects with the following structure:
+- Initial processing message
+- Update messages during processing
+- Final result or error message
+- Each message includes a status and timestamp
+
+### Usage Requirements
+- Valid JWT token in cookies
+- API_TOKEN environment variable must be set
+- Team service must be available at http://localhost:8010

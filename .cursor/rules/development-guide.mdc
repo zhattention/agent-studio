@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Guide
+
+## Setup and Running
+- Set up environment variables according to [env.example](mdc:env.example)
+- Run `npm install` to install dependencies
+- Run `npm run dev` to start the development server
+- Run `npm run build` followed by `npm start` for production
+
+## API Development
+When working with the API routes:
+1. Use [verifyAuth](mdc:utils/auth.ts) for authentication checks
+2. All API routes should be created using Next.js route handlers
+3. API routes should follow the pattern: `app/api/{feature}/{endpoint}/route.ts`
+
+## Stream Responses
+For streaming responses like in [app/api/team/call/route.ts](mdc:app/api/team/call/route.ts):
+- Use ReadableStream for creating streaming responses
+- Set proper headers: `'Content-Type': 'application/json', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive'`
+- Handle timeouts and errors appropriately
+
+## Environment Configuration
+- Required environment variables are checked on startup
+- JWT authentication requires proper secret configuration

@@ -1,0 +1,24 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure
+
+This is a Next.js application for AI agent flow configuration and editing.
+
+## Main Directories
+- [app/](mdc:app): Main Next.js application directory containing pages and API routes
+  - [app/api/](mdc:app/api): Backend API endpoints
+  - [app/api/team/](mdc:app/api/team): Team-related API endpoints
+  
+## API Routes
+The application uses Next.js API routes to handle backend functionality:
+- [app/api/team/call/route.ts](mdc:app/api/team/call/route.ts): Team call API that forwards requests to an AI team service
+
+## Authentication
+Authentication is handled via JWT tokens:
+- [utils/auth.ts](mdc:utils/auth.ts): Authentication utility functions
+
+## Configuration
+The application uses environment variables for configuration.

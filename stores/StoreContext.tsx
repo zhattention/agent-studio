@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react';
 import { RootStore } from './RootStore';
 
 // 创建根Store的实例
-const rootStore = new RootStore();
+export const rootStore = new RootStore();
 
 // 仅在浏览器环境中将rootStore添加到window对象
 if (typeof window !== 'undefined') {

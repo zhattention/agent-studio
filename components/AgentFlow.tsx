@@ -20,6 +20,7 @@ import { AgentNode } from './AgentNode';
 import { TeamNode } from './TeamNode';
 import { FileSelector } from './FileSelector';
 import Notification from './Notification';
+import ThreadViewer from './ThreadViewer';
 
 // Hooks
 import {
@@ -49,7 +50,7 @@ const nodeTypes = {
 
 const AgentFlow: React.FC = observer(() => {
   // 使用MobX store
-  const { nodeStore, configStore, uiStore } = useStore();
+  const { nodeStore, configStore, uiStore, threadStore } = useStore();
   
   // 添加通知状态监听
   useEffect(() => {
@@ -213,6 +214,13 @@ const AgentFlow: React.FC = observer(() => {
           >
             {isConnectMode ? '退出连接模式' : '连接节点'}
           </button>
+          <button 
+            className="button" 
+            onClick={() => threadStore.setShowThreadViewer(true)}
+            title="查看执行结果"
+          >
+            Thread Viewer
+          </button>
         </div>
         <div>
           <button className="button" onClick={() => openFileSelector('config')}>
@@ -298,14 +306,23 @@ const AgentFlow: React.FC = observer(() => {
             </>
           )}
           
-          <div className="sidebar-title">团队配置</div>
-          <TeamConfigEditor />
         </div>
       </div>
       
       {/* 使用新的Notification组件 */}
       <Notification />
-      
+
+      {/* 完整响应查看器 */}
+      {threadStore.showThreadViewer && (
+        <ThreadViewer
+          data={threadStore.currentExecution}
+          title={threadStore.currentExecution ? 
+            `团队 ${threadStore.currentExecution.team_name} 运行结果` : 
+            '执行结果查看器'}
+          onClose={() => threadStore.setShowThreadViewer(false)}
+        />
+      )}
+
       {showConfigSelector && (
         <FileSelector
           files={configFiles}

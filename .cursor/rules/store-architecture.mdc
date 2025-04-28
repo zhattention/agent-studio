@@ -1,0 +1,37 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Store Architecture
+
+This application uses MobX for state management with a hierarchical store structure.
+
+## Root Store
+[stores/RootStore.ts](mdc:stores/RootStore.ts) is the main entry point that initializes and coordinates all stores.
+
+## Store Structure
+The application has a hierarchy of stores:
+- **RootStore**: Main store that instantiates and coordinates other stores
+- **NodeStore**: [stores/NodeStore.ts](mdc:stores/NodeStore.ts) manages flow nodes and edges for the visual editor
+- **ConfigStore**: [stores/ConfigStore.ts](mdc:stores/ConfigStore.ts) handles agent/team configuration data
+- **UIStore**: [stores/UIStore.ts](mdc:stores/UIStore.ts) manages UI state like notifications
+
+## Store Context
+[stores/StoreContext.tsx](mdc:stores/StoreContext.tsx) provides React context for accessing stores in components.
+
+## Store Usage
+Use the `useStore` hook to access stores in components:
+```typescript
+// Access the entire store
+const { nodeStore, configStore, uiStore } = useStore();
+
+// Or use specialized hooks
+const nodeStore = useNodeStore();
+```
+
+## Data Flow
+1. NodeStore manages the visual representation of nodes and edges
+2. ConfigStore handles the configuration data structure
+3. RootStore provides syncing between visual nodes and configuration data
+4. UIStore manages UI state and notifications

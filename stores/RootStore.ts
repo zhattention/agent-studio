@@ -1,17 +1,20 @@
 import { NodeStore, IRootStore } from './NodeStore';
 import { ConfigStore } from './ConfigStore';
 import { UIStore } from './UIStore';
+import { ThreadStore } from './ThreadStore';
 import { reaction } from 'mobx';
 
 export class RootStore implements IRootStore {
   nodeStore: NodeStore;
   configStore: ConfigStore;
   uiStore: UIStore;
+  threadStore: ThreadStore;
   
   constructor() {
     this.nodeStore = new NodeStore(this);
     this.configStore = new ConfigStore(this);
     this.uiStore = new UIStore(this);
+    this.threadStore = new ThreadStore(this);
     
     // 不再自动设置同步
     // this.setupAutoSync();

@@ -13,7 +13,8 @@ const requiredEnvVars = [
   'ADMIN_USERNAME',
   'ADMIN_PASSWORD',
   'USER_USERNAME',
-  'USER_PASSWORD'
+  'USER_PASSWORD',
+  'API_TOKEN'
 ];
 
 // 检查环境变量
