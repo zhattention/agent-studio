@@ -1160,7 +1160,7 @@ body.resizing {
 
 .team-call-selector input {
   flex: 1;
-  background-color: var(--bg-light);
+  background-color: var(--bg-color);
   cursor: pointer;
 }
 
@@ -1967,4 +1967,60 @@ body.resizing {
 .test-status.completed {
   color: #27ae60;
   background-color: #e3f2fd;
+}
+
+.force-tool-section {
+  margin-top: 10px;
+}
+
+.force-tool-args {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.args-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.arg-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.arg-item label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.arg-config {
+  display: flex;
+  gap: 10px;
+}
+
+.arg-config select {
+  width: 150px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: white;
+}
+
+.arg-config input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.arg-config select:focus, .arg-config input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
 } 

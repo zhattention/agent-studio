@@ -4,12 +4,14 @@ import React, { useCallback, useState, useEffect, ChangeEvent } from 'react';
 import { useStore } from '../stores/StoreContext';
 import { observer } from 'mobx-react-lite';
 import { TeamSelector } from './TeamSelector';
-import { getConfigFiles, callTeam } from '../services/api';
+import { getConfigFiles, callTeam, saveConfig } from '../services/api';
 import { FileInfo } from '../types';
 import { TOOL_DESCRIPTIONS } from './constants';
 import LargeTextEditor from './LargeTextEditor';
 import StreamingTeamCall from './StreamingTeamCall';
 import ThreadViewer from './ThreadViewer';
+import { saveTeamNodeConfig } from '../services/node';
+import { log } from 'console';
 
 interface ToolDetailsModalProps {
   tool: string;
@@ -70,7 +72,7 @@ interface NodeEditorProps {
 }
 
 export const NodeEditor = observer(({ availableTools, availableModels }: NodeEditorProps) => {
-  const { nodeStore, uiStore, threadStore } = useStore();
+  const { nodeStore, uiStore, threadStore, configStore } = useStore();
   const node = nodeStore.selectedNode;
   
   const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
@@ -210,6 +212,40 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
     threadStore.setShowThreadViewer(true);
   }, [threadStore]);
   
+  // 添加团队保存处理函数
+  const handleSaveTeamConfig = async () => {
+    if (!node || node.type !== 'team' || !node.id) {
+      uiStore.showNotification('error', '无效的团队节点', 3000);
+      return;
+    }
+    
+    try {
+      uiStore.showNotification('info', `正在保存团队 ${node.data.name} 配置...`, 3000);
+      
+      // 调用新服务中的保存函数
+      const teamConfig = await saveTeamNodeConfig(
+        node.id,
+        nodeStore.nodes,
+        nodeStore.edges,
+        configStore.teamConfig,
+      );
+
+      console.log('[NodeEditor] 保存团队配置:', JSON.stringify(teamConfig, null, 2));
+
+      if (teamConfig) {
+        await saveConfig(teamConfig.name, teamConfig);
+        uiStore.showNotification('success', `团队 ${node.data.name} 配置已保存`, 3000);
+      } else {
+        uiStore.showNotification('error', `保存团队 ${node.data.name} 配置失败`, 3000);
+      }
+
+    } catch (error) {
+      console.error('保存团队配置出错:', error);
+      uiStore.showNotification('error', 
+        `保存失败: ${error instanceof Error ? error.message : String(error)}`, 5000);
+    }
+  };
+  
   if (node.type === 'agent') {
     return (
       <div className="editor-form">
@@ -301,7 +337,78 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
             )}
           </div>
         </div>
-        
+
+        <div className='form-group'>
+          <label>Force Tool Call:</label>
+          <div className="force-tool-section">
+            <select
+              name="force_tool_call"
+              value={node.data.force_tool_call || ""}
+              onChange={handleChange}
+              style={{ marginBottom: '10px', width: '100%' }}
+            >
+              <option value="">No forced tool call</option>
+              {(node.data.tools || []).map(tool => (
+                <option key={tool} value={tool}>{tool}</option>
+              ))}
+            </select>
+            
+            {node.data.force_tool_call && (
+              <div className="force-tool-args">
+                <label>Force Tool Arguments:</label>
+                <div className="args-editor">
+                  {Object.entries(TOOL_DESCRIPTIONS[node.data.force_tool_call]?.args || {}).map(([argName, argDesc]) => (
+                    <div key={argName} className="arg-item">
+                      <label>{argName}:</label>
+                      <div className="arg-config">
+                        <select
+                          value={node.data.force_tool_args?.[argName]?.type || "value"}
+                          onChange={(e) => {
+                            const newArgs = {
+                              ...node.data.force_tool_args,
+                              [argName]: {
+                                type: e.target.value,
+                                value: ""
+                              }
+                            };
+                            nodeStore.updateNodeData(node.id, { force_tool_args: newArgs });
+                          }}
+                        >
+                          <option value="value">Direct Value</option>
+                          <option value="history_grab">History Grab</option>
+                          <option value="xml_grab">XML Grab</option>
+                        </select>
+                        
+                        <input
+                          type="text"
+                          value={node.data.force_tool_args?.[argName]?.value || ""}
+                          onChange={(e) => {
+                            const newArgs = {
+                              ...node.data.force_tool_args,
+                              [argName]: {
+                                type: node.data.force_tool_args?.[argName]?.type || "value",
+                                value: e.target.value
+                              }
+                            };
+                            nodeStore.updateNodeData(node.id, { force_tool_args: newArgs });
+                          }}
+                          placeholder={
+                            node.data.force_tool_args?.[argName]?.type === "history_grab" 
+                              ? "Enter history index" 
+                              : node.data.force_tool_args?.[argName]?.type === "xml_grab"
+                                ? "Enter XML tag name"
+                                : "Enter value"
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="form-group">
           <label>Team Call:</label>
           <div className="team-call-selector">
@@ -469,6 +576,18 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
             onChange={handleChange} 
           />
           <small>0 for one-time execution, -1 for continuous, or seconds between executions</small>
+        </div>
+        
+        {/* 添加保存团队配置按钮 */}
+        <div className="form-group">
+          <button 
+            className="button primary" 
+            onClick={handleSaveTeamConfig}
+            style={{ marginBottom: '20px' }}
+          >
+            保存团队 "{node.data.name}" 配置
+          </button>
+          <small className="help-text">点击保存当前团队的配置，将基于当前节点图构建配置树</small>
         </div>
         
         {/* 添加响应模式选择 */}
