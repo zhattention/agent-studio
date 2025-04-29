@@ -3,3 +3,47 @@ description:
 globs:
 alwaysApply: false
 ---
+# UIStore Guide
+
+[stores/UIStore.ts](mdc:stores/UIStore.ts) manages UI-related state like notifications.
+
+## Core Properties
+- `notification`: Current notification object or null
+
+## Main Methods
+- `showNotification(type, message, duration)`: Display a notification
+- `clearNotification()`: Clear the current notification
+
+## Notification Types
+The notification system supports four types:
+- `success`: For successful operations
+- `error`: For errors and failures
+- `info`: For general information
+- `warning`: For warnings and cautions
+
+## Notification Structure
+The notification object follows this structure:
+```typescript
+{
+  type: 'success' | 'error' | 'info' | 'warning';
+  message: string;
+}
+```
+
+## Usage Example
+```typescript
+// In a component
+const { uiStore } = useStore();
+
+// Show a success notification
+uiStore.showNotification('success', 'Configuration saved successfully', 5000);
+
+// Show an error notification
+uiStore.showNotification('error', 'Failed to save configuration');
+
+// Manually clear notification if needed
+uiStore.clearNotification();
+```
+
+## Auto-Clearing
+Notifications automatically clear after the specified duration (default: 3000ms).

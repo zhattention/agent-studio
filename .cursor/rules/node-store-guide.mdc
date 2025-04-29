@@ -3,3 +3,52 @@ description:
 globs:
 alwaysApply: false
 ---
+# NodeStore Guide
+
+[stores/NodeStore.ts](mdc:stores/NodeStore.ts) manages the visual flow editor's nodes and edges.
+
+## Core Properties
+- `nodes`: Array of agent and team nodes in the flow
+- `edges`: Array of connections between nodes
+- `selectedNode`: Currently selected node (single selection)
+- `selectedNodes`: Array of selected nodes (multi-selection)
+- `reactFlowInstance`: Reference to the ReactFlow instance
+
+## Main Methods
+
+### Node Management
+- `setNodes(nodes)`: Set/update the nodes array
+- `addNode(type, position)`: Add a new node of type 'agent' or 'team'
+- `deleteNode(nodeId)`: Delete a node by ID
+- `deleteSelectedNodes()`: Delete all selected nodes
+- `updateNodeData(nodeId, newData)`: Update a node's data properties
+- `onNodesChange(changes)`: Handle node changes from ReactFlow
+
+### Edge Management
+- `setEdges(edges)`: Set/update the edges array
+- `onEdgesChange(changes)`: Handle edge changes from ReactFlow
+
+### Selection Management
+- `setSelectedNode(node)`: Set the currently selected node
+- `setSelectedNodes(nodes)`: Set multiple selected nodes
+- `hasSelectedNodes`: Computed property that returns true if any nodes are selected
+
+### Serialization & Integration
+- `serializeNodes()`: Convert nodes to a configuration format
+- `updateNodesFromAgents(agents)`: Update nodes based on agent configuration
+- `createNodesAndEdgesFromConfig(config)`: Generate nodes/edges from a configuration file
+
+## Usage Example
+```typescript
+// In a component
+const nodeStore = useNodeStore();
+
+// Add a new agent node
+const newNode = nodeStore.addNode('agent', { x: 100, y: 100 });
+
+// Update node data
+nodeStore.updateNodeData(newNode.id, { 
+  name: 'Custom Agent',
+  model: 'openai/gpt-4o' 
+});
+```

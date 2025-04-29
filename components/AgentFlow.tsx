@@ -12,6 +12,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../stores/StoreContext';
+import { buildTeamConfigFromNodes, cleanConfigForSave } from '../services/node';
+import { saveConfig } from '../services/api';
 
 // Components
 import { NodeEditor } from './NodeEditor';
@@ -149,22 +151,6 @@ const AgentFlow: React.FC = observer(() => {
     );
   }, [isConnectMode, setIsConnectMode, uiStore]);
 
-  // 处理保存配置
-  const handleSaveConfig = useCallback(async () => {
-    try {
-      const success = await configStore.saveTeamConfig();
-      
-      if (success) {
-        uiStore.showNotification('success', `配置已保存: ${configStore.teamConfig.name}`);
-      } else {
-        uiStore.showNotification('error', '保存失败');
-      }
-    } catch (error) {
-      console.error('Error saving config:', error);
-      uiStore.showNotification('error', `保存失败: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }, [configStore, uiStore]);
-
   // Handle node click - 使用MobX store
   const onNodeClick = useCallback((event: React.MouseEvent, node: ReactFlowNode) => {
     // If not holding shift key, only select the clicked node
@@ -229,7 +215,6 @@ const AgentFlow: React.FC = observer(() => {
           <button className="button" onClick={() => openFileSelector('prompt')}>
             Load Prompt
           </button>
-          <button className="button" onClick={handleSaveConfig}>Save</button>
         </div>
       </div>
       

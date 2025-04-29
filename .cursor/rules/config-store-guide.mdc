@@ -3,3 +3,63 @@ description:
 globs:
 alwaysApply: false
 ---
+# ConfigStore Guide
+
+[stores/ConfigStore.ts](mdc:stores/ConfigStore.ts) manages the configuration data for AI teams and agents.
+
+## Core Properties
+- `teamConfig`: The team configuration object representing the current team setup
+
+## Main Methods
+
+### Configuration Management
+- `setTeamConfig(config)`: Set the team configuration
+- `updateAgentsFromNodes(agentsData)`: Build team configuration from visual node data
+- `saveTeamConfig()`: Save the current team configuration to the server
+- `cleanConfigForSave(config)`: Clean configuration data before saving
+
+## Team Configuration Structure
+The main `teamConfig` object follows this structure:
+```typescript
+{
+  name: string;           // Team name
+  team_type: string;      // Team type (round_robin, tree, parallel)
+  team_prompt: string;    // Team prompt instructions
+  agents: AgentData[];    // Array of agent configurations
+  duration: number;       // Processing duration
+}
+```
+
+## Agent Configuration Structure
+Each agent in the `agents` array follows this structure:
+```typescript
+{
+  name: string;           // Agent name
+  model: string;          // AI model to use
+  tools: string[];        // Available tools
+  prompt: string;         // Main agent prompt
+  transition_prompt?: string; // Optional transition prompt
+}
+```
+
+## Synchronization with NodeStore
+The ConfigStore works in tandem with NodeStore:
+1. NodeStore provides visual representation
+2. ConfigStore maintains the structured data format
+3. `updateAgentsFromNodes()` builds the config from nodes
+4. RootStore facilitates synchronization
+
+## Usage Example
+```typescript
+// In a component
+const { configStore } = useStore();
+
+// Update the team name
+configStore.setTeamConfig({
+  ...configStore.teamConfig,
+  name: 'my_new_team'
+});
+
+// Save configuration
+configStore.saveTeamConfig();
+```

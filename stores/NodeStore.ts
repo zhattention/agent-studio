@@ -12,6 +12,7 @@ import {
   MarkerType
 } from 'reactflow';
 import { ThreadStore } from './ThreadStore';
+import { AgentConfig, TeamConfig } from '@/types';
 
 // 使用interface代替直接引用，避免循环依赖
 export interface IRootStore {
@@ -26,11 +27,12 @@ export interface IRootStore {
   manualSync: () => void; // 添加手动同步方法
 }
 
+export type NodeData = AgentConfig | TeamConfig;
 export class NodeStore {
-  nodes: Node[] = [];
+  nodes: Node<NodeData>[] = [];
   edges: Edge[] = [];
-  selectedNode: Node | null = null;
-  selectedNodes: Node[] = [];
+  selectedNode: Node<NodeData> | null = null;
+  selectedNodes: Node<NodeData>[] = [];
   reactFlowInstance: ReactFlowInstance | null = null;
   
   rootStore: IRootStore;

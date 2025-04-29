@@ -1,5 +1,59 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# ThreadStore Guide
+
+[stores/ThreadStore.ts](mdc:stores/ThreadStore.ts) manages team execution results, storing threads from different agents.
+
+## Core Properties
+- `executionResults`: Array of execution results from team runs
+- `currentExecutionId`: ID of the current/latest execution
+
+## Main Methods
+
+### Execution Management
+- `addExecutionResult(teamName)`: Create a new execution record and return its ID
+- `updateExecutionStatus(executionId, status, error)`: Update execution status ('running', 'completed', 'error')
+- `clearResults()`: Clear all execution results
+- `getExecutionById(executionId)`: Get a specific execution by ID
+
+### Thread Management
+- `addThreadEvent(executionId, agentName, event)`: Add a thread event to an agent in an execution
+- `parseAndAddThreadEvent(executionId, agentName, eventJson)`: Parse JSON and add thread event
+
+### Computed Properties
+- `currentExecution`: Get the current execution
+- `getAgentThreads`: Get threads for a specific agent in the current execution
+
+### Analytics
+- `calculateTokenUsage(executionId)`: Calculate token usage for an execution
+
+## Thread Event Structure
+```typescript
+{
+  source: string;        // Agent/source name
+  models_usage?: {       // Optional token usage info
+    prompt_tokens?: number;
+    completion_tokens?: number;
+  };
+  metadata: Record<string, any>;  // Custom metadata
+  content: any;          // Event content (can be string, object, or array)
+  type: ThreadEventType;  // Event type (ToolCallRequestEvent, etc.)
+  timestamp?: string;    // Event timestamp
+}
+```
+
+## Usage Example with API Service
+The team call API integrates with ThreadStore:
+```typescript
+// Start a new execution
+const executionId = startTeamExecution(teamName, rootStore);
+
+// Process a response line and add to store
+processTeamCallResponseLine(line, rootStore, executionId);
+```
+
+## Thread Viewer Component
+Use [components/ThreadViewer.tsx](mdc:components/ThreadViewer.tsx) to display team execution results.
