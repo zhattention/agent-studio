@@ -89,7 +89,7 @@ export interface AgentConfig {
   model: FullModelName | string;
   model_info?: ModelInfo;
   prompt?: string;
-  transaction_prompt?: string;
+  transition_prompt?: string;
   team_call?: string;
   team_call_tag?: string;
   full_message?: boolean;

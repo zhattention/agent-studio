@@ -1,11 +1,10 @@
-import { Node, Edge, TeamConfig, AgentData, TeamData, Notification } from './index';
+import { Node, Edge, TeamConfig, Notification } from './index';
 import { Connection, ReactFlowInstance } from 'reactflow';
 
 // AgentFlow组件的props类型
 export interface AgentFlowProps {}
 
 // 处理函数类型
-export type UpdateNodeDataHandler = (data: AgentData | TeamData) => void;
 export type OnConnectHandler = (params: Connection) => void;
 export type OnNodeClickHandler = (event: React.MouseEvent, node: Node) => void;
 export type OnEdgeClickHandler = (event: React.MouseEvent, edge: Edge) => void;

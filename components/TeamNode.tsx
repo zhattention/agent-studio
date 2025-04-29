@@ -2,10 +2,10 @@
 
 import React, { CSSProperties } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { TeamData } from '../types';
+import { TeamConfig } from '../types';
 
 interface TeamNodeProps extends NodeProps {
-  data: TeamData;
+  data: TeamConfig;
   selected: boolean;
 }
 

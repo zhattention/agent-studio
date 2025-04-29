@@ -51,13 +51,4 @@ export class RootStore implements IRootStore {
     );
     */
   }
-  
-  // 新增：手动同步方法
-  manualSync() {
-    console.log('[RootStore] 执行手动同步：从节点到配置');
-    const nodesData = this.nodeStore.serializeNodes();
-    if (nodesData && nodesData.length > 0) {
-      this.configStore.updateAgentsFromNodes(nodesData);
-    }
-  }
 } 

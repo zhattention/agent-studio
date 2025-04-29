@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { AgentData } from '../types';
+import { AgentConfig } from '../types';
 
 interface AgentNodeProps extends NodeProps {
-  data: AgentData;
+  data: AgentConfig;
   selected: boolean;
 }
 

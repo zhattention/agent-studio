@@ -5,7 +5,7 @@ import { useStore } from '../stores/StoreContext';
 import { observer } from 'mobx-react-lite';
 import { TeamSelector } from './TeamSelector';
 import { getConfigFiles, callTeam, saveConfig } from '../services/api';
-import { FileInfo } from '../types';
+import { AgentConfig, FileInfo, TeamConfig } from '../types';
 import { TOOL_DESCRIPTIONS } from './constants';
 import LargeTextEditor from './LargeTextEditor';
 import StreamingTeamCall from './StreamingTeamCall';
@@ -247,6 +247,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
   };
   
   if (node.type === 'agent') {
+    const nodeData = node.data as AgentConfig;
     return (
       <div className="editor-form">
         <div className="form-group">
@@ -533,6 +534,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
       </div>
     );
   } else if (node.type === 'team') {
+    const nodeData = node.data as TeamConfig;
     return (
       <div className="editor-form">
         <div className="form-group">
@@ -549,7 +551,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
           <label>Team Type:</label>
           <select 
             name="team_type" 
-            value={node.data.team_type || "round_robin"} 
+            value={nodeData.team_type || "round_robin"} 
             onChange={handleChange}
           >
             <option value="round_robin">round_robin</option>
@@ -562,7 +564,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
           <label>Team Prompt:</label>
           <textarea 
             name="team_prompt" 
-            value={node.data.team_prompt || ""} 
+            value={nodeData.team_prompt || ""} 
             onChange={handleChange}
           />
         </div>
@@ -572,7 +574,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
           <input 
             type="number" 
             name="duration" 
-            value={node.data.duration || 0} 
+            value={nodeData.duration || 0} 
             onChange={handleChange} 
           />
           <small>0 for one-time execution, -1 for continuous, or seconds between executions</small>

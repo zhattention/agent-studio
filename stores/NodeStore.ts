@@ -18,13 +18,11 @@ import { AgentConfig, TeamConfig } from '@/types';
 export interface IRootStore {
   nodeStore: NodeStore;
   configStore: {
-    updateAgentsFromNodes: (agents: any[]) => void;
   };
   uiStore: {
     showNotification: (type: 'success' | 'error' | 'info' | 'warning', message: string, duration?: number) => void;
   };
   threadStore?: ThreadStore;
-  manualSync: () => void; // 添加手动同步方法
 }
 
 export type NodeData = AgentConfig | TeamConfig;
