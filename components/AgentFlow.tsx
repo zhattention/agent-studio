@@ -194,13 +194,6 @@ const AgentFlow: React.FC = observer(() => {
             </button>
           )}
           <button 
-            className={`button ${isConnectMode ? 'active-button' : ''}`} 
-            onClick={toggleConnectMode}
-            title="进入/退出连接模式"
-          >
-            {isConnectMode ? '退出连接模式' : '连接节点'}
-          </button>
-          <button 
             className="button" 
             onClick={() => threadStore.setShowThreadViewer(true)}
             title="查看执行结果"
@@ -211,9 +204,6 @@ const AgentFlow: React.FC = observer(() => {
         <div>
           <button className="button" onClick={() => openFileSelector('config')}>
             Load Config
-          </button>
-          <button className="button" onClick={() => openFileSelector('prompt')}>
-            Load Prompt
           </button>
         </div>
       </div>

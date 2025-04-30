@@ -40,8 +40,6 @@ export const useAgentFlowState = () => {
     setFileSelectorType(type);
     if (type === 'config') {
       setShowConfigSelector(true);
-    } else if (type === 'prompt') {
-      setShowPromptSelector(true);
     }
   };
   
