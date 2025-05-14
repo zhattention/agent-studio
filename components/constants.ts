@@ -17,7 +17,7 @@ export const AVAILABLE_TOOLS = [
   "milvus_query",
   "store",
   "query",
-  "redis_exec",
+  "exec_redis_cmd",
   "binance_place_order",
   "binance_get_positions",
   "binance_set_leverage",
@@ -179,8 +179,8 @@ export const TOOL_DESCRIPTIONS = {
     },
     returns: "JSON字符串，包含查询结果"
   },
-  "redis_exec": {
-    name: "redis_exec",
+  "exec_redis_cmd": {
+    name: "exec_redis_cmd",
     description: "执行任意 Redis 命令",
     args: {
       command: "完整的Redis命令字符串，例如 \"set key value\" 或 \"get key\""
@@ -252,7 +252,7 @@ export const AVAILABLE_MODELS = [
   { id: "openai/gpt-4.1-mini", description: "适合遵循指令" },
   { id: "openai/chatgpt-4o-latest", description: "最新版GPT-4o，功能最强大, 贵" },
   { id: "google/gemini-2.0-flash-001", description: "适合写作, 不贵" },
-  { id: "google/gemini-2.5-pro-exp-03-25:free", description: "Google最新Gemini Pro模型，免费" },
+  { id: "google/gemini-2.5-pro-exp-03-25", description: "Google最新Gemini Pro模型，免费" },
   { id: "meta-llama/llama-3.3-70b-instruct:free", description: "Meta的Llama模型，开源免费" },
   { id: "anthropic/claude-3.7-sonnet", description: "Anthropic的Claude模型，擅长长文本" },
   { id: "anthropic/claude-3.7-sonnet:thinking", description: "Anthropic的Claude thinking模型，推理能力强" }

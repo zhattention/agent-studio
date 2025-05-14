@@ -323,6 +323,8 @@ export class NodeStore {
           team_prompt: config.team_prompt || "",
           agentCount: agentNodes.length,
           duration: config.duration || 0,
+          twitter: config.twitter || {},
+          telegram: config.telegram || {}
         }
       };
       
@@ -455,6 +457,88 @@ export class NodeStore {
     }
 
     return { nodes: newNodes, edges: validEdges };
+  };
+  
+  // Save workspace to localStorage with versioning
+  saveWorkspace = () => {
+    try {
+      const workspace = {
+        nodes: this.nodes,
+        edges: this.edges,
+        timestamp: Date.now(),
+        name: `Workspace ${new Date().toLocaleString()}`
+      };
+
+      // Get existing workspaces
+      const existingWorkspaces = this.getSavedWorkspaces();
+      
+      // Add new workspace to the beginning of the array
+      existingWorkspaces.unshift(workspace);
+      
+      // Keep only the 10 most recent workspaces
+      const workspacesToSave = existingWorkspaces.slice(0, 10);
+      
+      // Save to localStorage
+      localStorage.setItem('agentFlow_workspaces', JSON.stringify(workspacesToSave));
+      
+      this.rootStore.uiStore.showNotification('success', '工作区已保存', 3000);
+    } catch (error) {
+      console.error('Error saving workspace:', error);
+      this.rootStore.uiStore.showNotification('error', '保存工作区失败', 3000);
+    }
+  };
+
+  // Get all saved workspaces
+  getSavedWorkspaces = () => {
+    try {
+      const savedWorkspaces = localStorage.getItem('agentFlow_workspaces');
+      return savedWorkspaces ? JSON.parse(savedWorkspaces) : [];
+    } catch (error) {
+      console.error('Error getting saved workspaces:', error);
+      return [];
+    }
+  };
+
+  // Load specific workspace by index
+  loadWorkspaceByIndex = (index: number) => {
+    try {
+      const workspaces = this.getSavedWorkspaces();
+      if (workspaces && workspaces[index]) {
+        const workspace = workspaces[index];
+        this.nodes = workspace.nodes;
+        this.edges = workspace.edges;
+        this.rootStore.uiStore.showNotification('success', `已加载工作区: ${workspace.name}`, 3000);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error loading workspace:', error);
+      this.rootStore.uiStore.showNotification('error', '加载工作区失败', 3000);
+      return false;
+    }
+  };
+
+  // Load the most recent workspace
+  loadWorkspace = () => {
+    return this.loadWorkspaceByIndex(0);
+  };
+
+  // Delete a specific workspace
+  deleteWorkspace = (index: number) => {
+    try {
+      const workspaces = this.getSavedWorkspaces();
+      if (workspaces && workspaces[index]) {
+        workspaces.splice(index, 1);
+        localStorage.setItem('agentFlow_workspaces', JSON.stringify(workspaces));
+        this.rootStore.uiStore.showNotification('success', '工作区已删除', 3000);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+      this.rootStore.uiStore.showNotification('error', '删除工作区失败', 3000);
+      return false;
+    }
   };
   
   // 序列化节点数据，用于与ConfigStore同步

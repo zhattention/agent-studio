@@ -31,7 +31,7 @@ export type DatabaseTool =
   | 'milvus_query'
   | 'redis_store'
   | 'redis_query'
-  | 'redis_exec';
+  | 'exec_redis_cmd';
 
 export type BinanceTool = 
   | 'binance_place_order'

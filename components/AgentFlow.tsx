@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,7 +13,7 @@ import 'reactflow/dist/style.css';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../stores/StoreContext';
 import { buildTeamConfigFromNodes, cleanConfigForSave } from '../services/node';
-import { saveConfig } from '../services/api';
+import { saveConfig, saveWorkspace } from '../services/api';
 
 // Components
 import { NodeEditor } from './NodeEditor';
@@ -23,6 +23,9 @@ import { TeamNode } from './TeamNode';
 import { FileSelector } from './FileSelector';
 import Notification from './Notification';
 import ThreadViewer from './ThreadViewer';
+import WorkspaceManager from './WorkspaceManager';
+import WorkspaceNameDialog from './WorkspaceNameDialog';
+import '../styles/WorkspaceManager.css';
 
 // Hooks
 import {
@@ -182,6 +185,36 @@ const AgentFlow: React.FC = observer(() => {
     });
   }, [nodeStore.nodes]);
 
+  // Load workspace on mount
+  useEffect(() => {
+    nodeStore.loadWorkspace();
+  }, []);
+
+  const [showWorkspaceManager, setShowWorkspaceManager] = useState(false);
+  const [showWorkspaceNameDialog, setShowWorkspaceNameDialog] = useState(false);
+
+  const handleSaveWorkspace = async (name: string) => {
+    try {
+      const workspace = {
+        nodes: nodeStore.nodes,
+        edges: nodeStore.edges,
+        timestamp: Date.now()
+      };
+      
+      console.log(`Saving workspace "${name}"...`, {
+        nodeCount: workspace.nodes.length,
+        edgeCount: workspace.edges.length
+      });
+      
+      await saveWorkspace(name, workspace);
+      setShowWorkspaceNameDialog(false);
+      uiStore.showNotification('success', '工作区已保存', 3000);
+    } catch (error) {
+      console.error('Error saving workspace:', error);
+      uiStore.showNotification('error', '保存工作区失败', 3000);
+    }
+  };
+
   return (
     <div className="app-container">
       <div className="toolbar">
@@ -199,6 +232,20 @@ const AgentFlow: React.FC = observer(() => {
             title="查看执行结果"
           >
             Thread Viewer
+          </button>
+          <button 
+            className="button" 
+            onClick={() => setShowWorkspaceNameDialog(true)}
+            title="保存工作区"
+          >
+            Save Workspace
+          </button>
+          <button 
+            className="button" 
+            onClick={() => setShowWorkspaceManager(true)}
+            title="管理工作区"
+          >
+            Manage Workspaces
           </button>
         </div>
         <div>
@@ -315,6 +362,17 @@ const AgentFlow: React.FC = observer(() => {
           onReplace={handlePromptReplace}
           onClose={() => setShowPromptSelector(false)}
           type="prompt"
+        />
+      )}
+
+      {showWorkspaceManager && (
+        <WorkspaceManager onClose={() => setShowWorkspaceManager(false)} />
+      )}
+
+      {showWorkspaceNameDialog && (
+        <WorkspaceNameDialog
+          onSave={handleSaveWorkspace}
+          onCancel={() => setShowWorkspaceNameDialog(false)}
         />
       )}
     </div>

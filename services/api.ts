@@ -249,3 +249,91 @@ export const streamCallTeam = (
     }
   };
 };
+
+// Workspace management APIs
+export const saveWorkspace = async (workspaceName: string, data: any) => {
+  try {
+    console.log(`Saving workspace "${workspaceName}"...`, {
+      hasNodes: !!data.nodes,
+      nodeCount: data.nodes?.length,
+      hasEdges: !!data.edges,
+      edgeCount: data.edges?.length,
+    });
+    
+    const response = await fetch('/api/workspace/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: workspaceName,
+        data
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response from server:', errorText);
+      throw new Error('Failed to save workspace: ' + errorText);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error saving workspace:', error);
+    throw error;
+  }
+};
+
+export const getWorkspaceList = async () => {
+  try {
+    const response = await fetch('/api/workspace/list');
+    if (!response.ok) {
+      throw new Error('Failed to get workspace list');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting workspace list:', error);
+    throw error;
+  }
+};
+
+export const getWorkspaceVersions = async (workspaceName: string) => {
+  try {
+    const response = await fetch(`/api/workspace/versions/${workspaceName}`);
+    if (!response.ok) {
+      throw new Error('Failed to get workspace versions');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting workspace versions:', error);
+    throw error;
+  }
+};
+
+export const loadWorkspace = async (workspaceName: string, version: string) => {
+  try {
+    const response = await fetch(`/api/workspace/load/${workspaceName}/${version}`);
+    if (!response.ok) {
+      throw new Error('Failed to load workspace');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error loading workspace:', error);
+    throw error;
+  }
+};
+
+export const deleteWorkspace = async (workspaceName: string, version: string) => {
+  try {
+    const response = await fetch(`/api/workspace/delete/${workspaceName}/${version}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete workspace');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error deleting workspace:', error);
+    throw error;
+  }
+};

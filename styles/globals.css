@@ -137,6 +137,20 @@ body {
   font-family: monospace;
 }
 
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.form-group .flex {
+  display: flex;
+  align-items: center;
+}
+
+.form-group .justify-start {
+  justify-content: flex-start;
+}
+
 .tools-list {
   max-height: 260px;
   overflow-y: auto;

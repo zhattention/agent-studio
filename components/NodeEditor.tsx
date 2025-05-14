@@ -117,7 +117,15 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
   }, []);
   
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    let value: string | boolean;
+    
+    // 如果是复选框，使用 checked 值
+    if (e.target.type === 'checkbox') {
+      value = (e.target as HTMLInputElement).checked;
+    } else {
+      value = e.target.value;
+    }
     
     // 直接更新nodeStore中的节点数据
     nodeStore.updateNodeData(node.id, {
@@ -382,13 +390,21 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
                         
                         <input
                           type="text"
+                          autoComplete="on"
                           value={node.data.force_tool_args?.[argName]?.value || ""}
                           onChange={(e) => {
+                            let value: string | number;
+                            if (node.data.force_tool_args?.[argName]?.type === "history_grab") {
+                              value = parseInt(e.target.value);
+                            } else {
+                              value = e.target.value;
+                            }
+
                             const newArgs = {
                               ...node.data.force_tool_args,
                               [argName]: {
                                 type: node.data.force_tool_args?.[argName]?.type || "value",
-                                value: e.target.value
+                                value: value
                               }
                             };
                             nodeStore.updateNodeData(node.id, { force_tool_args: newArgs });
@@ -453,6 +469,17 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
             placeholder="可选的团队调用标签"
           />
           <small className="help-text">可选标签，用于团队调用时传递额外参数。</small>
+        </div>
+
+        <div className='form-group'>
+          <label>Full Message:</label>
+          <input 
+            type="checkbox" 
+            name="full_message" 
+            checked={node.data.full_message || false} 
+            onChange={handleChange}
+          />
+          <small className="help-text">当为true时，团队将返回完整消息，否则返回最后一条消息</small>
         </div>
         
         <div className="form-group">
@@ -578,6 +605,19 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
             onChange={handleChange} 
           />
           <small>0 for one-time execution, -1 for continuous, or seconds between executions</small>
+        </div>
+        <div className="form-group">
+          <div className="flex items-center">
+            <input 
+              type="checkbox" 
+              name="full_message" 
+              checked={nodeData.full_message || false} 
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <label className="mb-0">Return Full Message:</label>
+          </div>
+          <small>when true, the team will return the full message, otherwise it will return the last message</small>
         </div>
         
         {/* 添加保存团队配置按钮 */}
