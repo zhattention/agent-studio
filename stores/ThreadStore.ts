@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { IRootStore } from './NodeStore';
+import { log } from 'console';
 
 // Define thread types
 export type ThreadEventType = 'ToolCallRequestEvent' | 'ToolCallExecutionEvent' | 'ToolCallSummaryMessage' | 'TextMessage';
@@ -184,7 +185,6 @@ export class ThreadStore {
       return;
     }
 
-    // Handle agent output
     if (data.source && data.type) {
       this.addThreadEvent(executionId, data.source, {
         source: data.source,

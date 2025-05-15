@@ -520,7 +520,22 @@ export class NodeStore {
 
   // Load the most recent workspace
   loadWorkspace = () => {
-    return this.loadWorkspaceByIndex(0);
+    // Try to load from localStorage first
+    const savedWorkspace = localStorage.getItem('lastWorkspace');
+    if (savedWorkspace) {
+      try {
+        const workspace = JSON.parse(savedWorkspace);
+        this.nodes = workspace.nodes;
+        this.edges = workspace.edges;
+        console.log('Loaded workspace from localStorage');
+        return;
+      } catch (error) {
+        console.error('Error loading workspace from localStorage:', error);
+      }
+    }
+    
+    // If no localStorage data or error occurred, load from server
+    this.loadWorkspaceByIndex(0);
   };
 
   // Delete a specific workspace

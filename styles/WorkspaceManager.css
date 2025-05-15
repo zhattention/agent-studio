@@ -239,4 +239,184 @@
 .save-button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+/* Job Manager Styles */
+.job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.job-item {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  transition: background-color 0.2s;
+}
+
+.job-item:hover {
+  background-color: #f0f0f0;
+}
+
+.job-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.job-info {
+  flex: 1;
+}
+
+.job-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.job-description {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.job-details {
+  font-size: 12px;
+  color: #777;
+}
+
+.job-details p {
+  margin: 2px 0;
+}
+
+.stop-button {
+  background-color: #e53e3e;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.stop-button:hover {
+  background-color: #c53030;
+}
+
+.no-jobs-message {
+  text-align: center;
+  color: #666;
+  padding: 24px;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 24px;
+}
+
+.error-message {
+  background-color: #fed7d7;
+  border: 1px solid #f56565;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+/* Job Manager specific styles */
+.job-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.job-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.job-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.job-box-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.stop-job-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stop-job-btn:hover {
+  background-color: #dc2626;
+}
+
+.job-box-content {
+  padding: 16px;
+}
+
+.job-content-text {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #4b5563;
+}
+
+.job-metadata {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.error-box {
+  margin: 16px;
+  padding: 12px;
+  background-color: #fee2e2;
+  border: 1px solid #f87171;
+  border-radius: 6px;
+  color: #b91c1c;
+}
+
+.loading-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #64748b;
+}
+
+.empty-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #64748b;
+  font-style: italic;
 } 

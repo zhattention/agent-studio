@@ -337,3 +337,88 @@ export const deleteWorkspace = async (workspaceName: string, version: string) =>
     throw error;
   }
 };
+
+// 启动团队定时任务
+export const startTeamJob = async (teamName: string, content: string): Promise<{
+  status: string;
+  job_id: string;
+  message: string;
+}> => {
+  try {
+    const response = await fetch('/api/job/start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        team_name: teamName,
+        content: content
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to start team job');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error starting team job:', error);
+    throw error;
+  }
+};
+
+// 获取所有团队任务列表
+export const getTeamJobs = async (): Promise<{
+  status: string;
+  jobs: Array<{
+    id: string;
+    team_name: string;
+    content: string;
+    duration: number;
+    max_duration: number;
+    created_at: string;
+  }>;
+}> => {
+  try {
+    const response = await fetch('/api/job/list', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to get team jobs');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting team jobs:', error);
+    throw error;
+  }
+};
+
+// 停止团队定时任务
+export const stopTeamJob = async (teamName: string): Promise<{
+  status: string;
+  message: string;
+}> => {
+  try {
+    const response = await fetch('/api/job/stop', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        team_name: teamName
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to stop team job');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error stopping team job:', error);
+    throw error;
+  }
+};

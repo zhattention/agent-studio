@@ -13,7 +13,7 @@ import 'reactflow/dist/style.css';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../stores/StoreContext';
 import { buildTeamConfigFromNodes, cleanConfigForSave } from '../services/node';
-import { saveConfig, saveWorkspace } from '../services/api';
+import { saveConfig, saveWorkspace, startTeamJob } from '../services/api';
 
 // Components
 import { NodeEditor } from './NodeEditor';
@@ -25,6 +25,7 @@ import Notification from './Notification';
 import ThreadViewer from './ThreadViewer';
 import WorkspaceManager from './WorkspaceManager';
 import WorkspaceNameDialog from './WorkspaceNameDialog';
+import JobManager from './JobManager';
 import '../styles/WorkspaceManager.css';
 
 // Hooks
@@ -192,6 +193,8 @@ const AgentFlow: React.FC = observer(() => {
 
   const [showWorkspaceManager, setShowWorkspaceManager] = useState(false);
   const [showWorkspaceNameDialog, setShowWorkspaceNameDialog] = useState(false);
+  const [showJobManager, setShowJobManager] = useState(false);
+  const [isStartingJob, setIsStartingJob] = useState(false);
 
   const handleSaveWorkspace = async (name: string) => {
     try {
@@ -206,12 +209,54 @@ const AgentFlow: React.FC = observer(() => {
         edgeCount: workspace.edges.length
       });
       
+      // Save to server
       await saveWorkspace(name, workspace);
+      
+      // Save to localStorage
+      localStorage.setItem('lastWorkspace', JSON.stringify(workspace));
+      
       setShowWorkspaceNameDialog(false);
       uiStore.showNotification('success', '工作区已保存', 3000);
     } catch (error) {
       console.error('Error saving workspace:', error);
       uiStore.showNotification('error', '保存工作区失败', 3000);
+    }
+  };
+
+  const handleStartJob = async () => {
+    // 检查是否有选中的节点
+    if (!nodeStore.selectedNode) {
+      uiStore.showNotification('error', '请先选择一个团队节点', 3000);
+      return;
+    }
+    
+    // 检查选中的节点是否是团队类型
+    if (nodeStore.selectedNode.type !== 'team') {
+      uiStore.showNotification('error', '请选择团队节点，而不是Agent节点', 3000);
+      return;
+    }
+    
+    try {
+      setIsStartingJob(true);
+      
+      // 从选中的团队节点获取团队名称
+      const teamName = nodeStore.selectedNode.data.name;
+      
+      console.log(`Starting job for team: ${teamName}`);
+      const response = await startTeamJob(teamName, "Auto task from UI");
+      
+      if (response.status === 'success') {
+        console.log('Job started successfully:', response.job_id);
+        uiStore.showNotification('success', '团队任务已启动', 3000);
+      } else {
+        console.error('Failed to start job:', response.message);
+        uiStore.showNotification('error', '启动任务失败', 3000);
+      }
+    } catch (error) {
+      console.error('Error starting job:', error);
+      uiStore.showNotification('error', '启动任务失败', 3000);
+    } finally {
+      setIsStartingJob(false);
     }
   };
 
@@ -246,6 +291,21 @@ const AgentFlow: React.FC = observer(() => {
             title="管理工作区"
           >
             Manage Workspaces
+          </button>
+          <button 
+            className="button" 
+            onClick={() => setShowJobManager(true)}
+            title="管理团队任务"
+          >
+            Manage Jobs
+          </button>
+          <button 
+            className={`button ${isStartingJob ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={handleStartJob}
+            disabled={isStartingJob}
+            title="启动团队定时任务"
+          >
+            {isStartingJob ? 'Starting...' : 'Start Team Job'}
           </button>
         </div>
         <div>
@@ -373,6 +433,13 @@ const AgentFlow: React.FC = observer(() => {
         <WorkspaceNameDialog
           onSave={handleSaveWorkspace}
           onCancel={() => setShowWorkspaceNameDialog(false)}
+        />
+      )}
+
+      {showJobManager && (
+        <JobManager
+          isOpen={showJobManager}
+          onClose={() => setShowJobManager(false)}
         />
       )}
     </div>
