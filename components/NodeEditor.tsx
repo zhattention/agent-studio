@@ -313,7 +313,7 @@ export const NodeEditor = observer(({ availableTools, availableModels }: NodeEdi
             {toolFilter && ` (搜索: "${toolFilter}")`}
           </div>
           <div className="tools-list" style={{ height: '200px', overflowY: 'auto' }}>
-            {filteredTools.map(tool => (
+            {filteredTools.sort((a: string, b: string) => (node.data.tools || []).includes(a) ? -1 : 1).map(tool => (
               <div key={tool} className="tool-item">
                 <input 
                   type="checkbox" 
