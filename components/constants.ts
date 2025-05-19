@@ -23,7 +23,9 @@ export const AVAILABLE_TOOLS = [
   "binance_set_leverage",
   "binance_close_position",
   "binance_get_balance",
-  "binance_get_trades"
+  "binance_get_trades",
+  "autop_message_store",
+  "autop_message_query",
 ];
 
 // Tool descriptions with detailed information
@@ -244,6 +246,32 @@ export const TOOL_DESCRIPTIONS = {
       symbol: "可选的交易对筛选"
     },
     returns: "JSON字符串，包含交易记录"
+  },
+  "autop_message_store": {
+    name: "autop_message_store",
+    description: "存储消息到 autop 消息服务器",
+    args: {
+      content: "消息内容（必填）",
+      title: "消息标题（可选）",
+      tags: "消息标签，逗号分隔，例如 tag1,tag2（可选）",
+      source: "消息来源（可选）",
+      id: "消息ID（可选）"
+    },
+    returns: "JSON字符串，包含 status, message, id"
+  },
+  "autop_message_query": {
+    name: "autop_message_query",
+    description: "查询 autop 消息服务器中的消息",
+    args: {
+      query: "查询语句（可选）",
+      sources: "消息来源，多个来源用逗号分隔. 例如 source1,source2(可选)",
+      tags: "标签，多个标签用逗号分隔. 例如 tag1,tag2(可选)",
+      from_timestamp: "搜索起始时间戳. 例如 1715702400(可选)",
+      to_timestamp: "搜索结束时间戳. 例如 1715702400(可选)",
+      limit: "最大返回数量，默认为10 (可选)",
+      similarity_threshold: "相似度阈值，默认为0.7，这个数字越大，返回结果的向量相似度越高(可选)"
+    },
+    returns: "JSON字符串，包含 status, message, messages"
   }
 };
 
