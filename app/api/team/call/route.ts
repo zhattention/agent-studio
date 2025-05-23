@@ -41,6 +41,10 @@ export async function POST(request: NextRequest) {
     
     const stream = new ReadableStream({
       async start(controller) {
+        const heartBeat = setInterval(() => {
+          controller.enqueue(encoder.encode('{"type": "heartBeat"}\n'));
+        }, 1000)
+
         try {
           // 设置自定义 fetch 选项，包括超时处理
           const abortController = new AbortController();
@@ -65,7 +69,7 @@ export async function POST(request: NextRequest) {
           }).finally(() => {
             clearTimeout(timeoutId); // 清除超时定时器
           });
-          
+
           const reader = response.body?.getReader();
           if (reader) {
             const decoder = new TextDecoder();
@@ -122,6 +126,8 @@ export async function POST(request: NextRequest) {
           
           // 关闭流
           controller.close();
+        } finally {
+          clearInterval(heartBeat);
         }
       }
     });

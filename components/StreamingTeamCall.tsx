@@ -195,7 +195,6 @@ const StreamingTeamCall: React.FC<StreamingTeamCallProps> = ({
         </div>
       </div>
       
-      {/* 心跳历史记录 */}
       {showAllHeartbeats && heartbeats.length > 0 && (
         <div className="heartbeat-history mb-3 p-2 bg-gray-50 rounded text-sm">
           <div className="text-xs font-semibold mb-1 text-primary-color">
@@ -209,27 +208,6 @@ const StreamingTeamCall: React.FC<StreamingTeamCallProps> = ({
               </li>
             ))}
           </ul>
-        </div>
-      )}
-      
-      {/* 进度显示区域 */}
-      {progress.length > 0 && (
-        <div className="progress-area">
-          <div className="progress-messages">
-            {progress.map((message, index) => (
-              <div key={index} className="progress-message">
-                {message}
-              </div>
-            ))}
-            <div ref={progressEndRef} />
-          </div>
-        </div>
-      )}
-      
-      {/* 错误显示 */}
-      {status === 'error' && (
-        <div className="error-message text-rose-600">
-          <strong>错误:</strong> {error}
         </div>
       )}
       
